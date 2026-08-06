@@ -36,6 +36,60 @@ Customer VPC private resources
 
 This is a single-instance design. It does not provide high availability or automatic Access Server configuration backups.
 
+## Dev and staging environment separation
+
+The ready-to-customize template in [`environments/dev-staging`](environments/dev-staging) deploys one OpenVPN Access Server in the development VPC and connects development to staging with VPC peering. VPN clients are given routes to both non-production VPCs. Production is deliberately excluded: the template has no production variables, dependencies, routes, or peer connection.
+
+```text
+VPN client
+    |
+OpenVPN Access Server (dev VPC)
+    |                         \
+dev resources        VPC peering -> staging resources
+
+production: no connection
+```
+
+The stack creates:
+
+- OpenVPN Access Server in the development public subnet.
+- A dev-to-staging VPC peering connection with DNS resolution enabled.
+- Routes from selected development route tables to the staging CIDR.
+- Return routes from selected staging route tables to the development CIDR.
+- An OpenVPN private-network route that advertises the staging CIDR to VPN clients.
+- A separate Terraform state path for this shared non-production connectivity stack.
+
+### Configure a new company
+
+1. Copy the example values and backend files:
+
+   ```bash
+   cd environments/dev-staging
+   cp terraform.tfvars.example terraform.tfvars
+   cp backend.tf.example backend.tf
+   ```
+
+2. Replace every `REPLACE_*` value in `terraform.tfvars` and `backend.tf`. Set the new company's development and staging VPC IDs, non-overlapping CIDRs, development public subnet, route table IDs, trusted administrator CIDRs, state bucket, Region, and tags.
+3. Confirm that none of the supplied VPCs, route tables, CIDRs, DNS zones, or AWS credentials belong to production.
+4. Use a dedicated AWS profile or role for the new customer and verify it before planning:
+
+   ```bash
+   export AWS_PROFILE=REPLACE_CUSTOMER_NONPROD_PROFILE
+   aws sts get-caller-identity
+   terraform init
+   terraform fmt -check -recursive
+   terraform validate
+   terraform plan
+   ```
+
+5. Review both directions of every proposed route and apply only after approval:
+
+   ```bash
+   terraform apply
+   ```
+
+Do not commit `terraform.tfvars`, backend credentials, state files, VPN profiles, passwords, private keys, account IDs, or real customer network values. The repository ignores common sensitive Terraform and VPN files, but the plan must still be reviewed before publication.
+
 ## Requirements
 
 - Terraform 1.9 or newer.

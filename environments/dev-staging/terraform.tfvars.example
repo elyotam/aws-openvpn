@@ -1,0 +1,29 @@
+company_name = "replace-company"
+aws_region   = "eu-west-1"
+
+dev_vpc_id           = "vpc-REPLACE_DEV"
+dev_vpc_cidr         = "10.10.0.0/16"
+dev_public_subnet_id = "subnet-REPLACE_DEV_PUBLIC"
+dev_route_table_ids = [
+  "rtb-REPLACE_DEV_PRIVATE_A",
+  "rtb-REPLACE_DEV_PRIVATE_B",
+]
+
+staging_vpc_id   = "vpc-REPLACE_STAGING"
+staging_vpc_cidr = "10.20.0.0/16"
+staging_route_table_ids = [
+  "rtb-REPLACE_STAGING_PRIVATE_A",
+  "rtb-REPLACE_STAGING_PRIVATE_B",
+]
+
+admin_cidrs      = ["203.0.113.10/32"]
+vpn_client_cidrs = ["0.0.0.0/0"]
+
+instance_type  = "t3.small"
+hostname       = null
+route53_zone_id = null
+
+tags = {
+  Project = "openvpn"
+  Owner   = "platform-team"
+}

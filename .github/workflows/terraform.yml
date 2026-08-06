@@ -38,3 +38,11 @@ jobs:
       - name: Validate example
         working-directory: examples/terraform
         run: terraform validate
+
+      - name: Initialize dev-staging environment template
+        working-directory: environments/dev-staging
+        run: terraform init -backend=false
+
+      - name: Validate dev-staging environment template
+        working-directory: environments/dev-staging
+        run: terraform validate

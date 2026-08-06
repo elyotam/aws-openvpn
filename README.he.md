@@ -17,6 +17,60 @@
 - רשומת Route 53 אופציונלית.
 - דוגמאות Terraform ו-Terragrunt.
 
+## הפרדה וקישור בין dev ל-staging
+
+התבנית המוכנה להתאמה נמצאת בתיקייה [`environments/dev-staging`](environments/dev-staging). היא מקימה שרת OpenVPN יחיד בתוך ה־VPC של `dev`, ומחברת את `dev` ל־`staging` באמצעות VPC Peering. לקוחות ה־VPN מקבלים נתיב לשתי סביבות ה־non-production. סביבת `production` מוחרגת בכוונה: אין בתבנית משתני production, תלויות, routes או peering אליה.
+
+```text
+לקוח VPN
+    |
+OpenVPN Access Server (dev VPC)
+    |                         \
+משאבי dev          VPC peering -> משאבי staging
+
+production: אין חיבור
+```
+
+ה־stack יוצר:
+
+- OpenVPN Access Server ב־public subnet של `dev`.
+- VPC Peering בין `dev` ל־`staging`, כולל DNS resolution.
+- Routes מטבלאות הניתוב שנבחרו ב־`dev` אל ה־CIDR של `staging`.
+- Return routes מטבלאות הניתוב שנבחרו ב־`staging` אל ה־CIDR של `dev`.
+- OpenVPN private-network route שמפרסם ללקוחות ה־VPN את ה־CIDR של `staging`.
+- נתיב Terraform State נפרד עבור קישוריות ה־non-production המשותפת.
+
+### התאמה לחברה חדשה
+
+1. העתק את קובצי הדוגמה:
+
+   ```bash
+   cd environments/dev-staging
+   cp terraform.tfvars.example terraform.tfvars
+   cp backend.tf.example backend.tf
+   ```
+
+2. החלף את כל ערכי `REPLACE_*` בתוך `terraform.tfvars` ו־`backend.tf`. יש להזין את מזהי ה־VPC של `dev` ו־`staging`, טווחי CIDR שאינם חופפים, public subnet של `dev`, מזהי route tables, כתובות מנהלים מורשות, state bucket, אזור ותגיות של החברה החדשה.
+3. ודא שאף VPC, טבלת ניתוב, CIDR, אזור DNS או הרשאת AWS שסופקו אינם שייכים ל־production.
+4. השתמש ב־AWS profile או role ייעודי ל־non-production של החברה החדשה ואמת אותו לפני יצירת plan:
+
+   ```bash
+   export AWS_PROFILE=REPLACE_CUSTOMER_NONPROD_PROFILE
+   aws sts get-caller-identity
+   terraform init
+   terraform fmt -check -recursive
+   terraform validate
+   terraform plan
+   ```
+
+5. בדוק את שני כיווני הניתוב ב־plan והפעל רק לאחר אישור:
+
+   ```bash
+   terraform apply
+   ```
+
+אין לבצע commit ל־`terraform.tfvars`, הרשאות backend, קובצי state, פרופילי VPN, סיסמאות, מפתחות פרטיים, מספרי חשבון או ערכי רשת אמיתיים של לקוחות. ה־`.gitignore` מחריג קבצים רגישים נפוצים, אך עדיין חובה לבדוק את ה־plan ואת ה־diff לפני פרסום.
+
 ## דרישות מוקדמות
 
 1. חשבון AWS והרשאות מתאימות.

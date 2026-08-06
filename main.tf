@@ -114,8 +114,9 @@ resource "aws_instance" "this" {
   disable_api_termination     = var.disable_api_termination
 
   user_data = templatefile("${path.module}/user_data.sh.tftpl", {
-    server_address      = local.server_address
-    additional_userdata = var.additional_user_data
+    server_address        = local.server_address
+    additional_userdata   = var.additional_user_data
+    additional_vpn_routes = var.additional_vpn_routes
   })
 
   user_data_replace_on_change = var.replace_instance_on_user_data_change

@@ -54,8 +54,13 @@ fi
 
 if [ -n "$SERVER_ADDRESS" ]; then
   "$SACLI" --key "host.name" --value "$SERVER_ADDRESS" ConfigPut
-  "$SACLI" start
 fi
+
+"$SACLI" --key "vpn.server.routing.gateway_access" --value "true" ConfigPut
+%{ for index, cidr in additional_vpn_routes ~}
+"$SACLI" --key "vpn.server.routing.private_network.${index + 1}" --value "${cidr}" ConfigPut
+%{ endfor ~}
+"$SACLI" start
 
 install -d -m 0755 /etc/motd.d
 

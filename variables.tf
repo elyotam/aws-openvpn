@@ -151,6 +151,20 @@ variable "additional_user_data" {
   default     = ""
 }
 
+variable "additional_vpn_routes" {
+  description = "Additional private IPv4 CIDRs advertised to VPN clients, for example a peered staging VPC. Do not include production CIDRs in a non-production deployment."
+  type        = list(string)
+  default     = []
+
+  validation {
+    condition = alltrue([
+      for cidr in var.additional_vpn_routes :
+      can(cidrnetmask(cidr)) && !strcontains(cidr, ":")
+    ])
+    error_message = "additional_vpn_routes must contain valid IPv4 CIDR blocks."
+  }
+}
+
 variable "tags" {
   description = "Additional tags applied to created resources."
   type        = map(string)
