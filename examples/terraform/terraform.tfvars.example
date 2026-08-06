@@ -1,0 +1,26 @@
+aws_region = "eu-west-1"
+name       = "acme-openvpn"
+
+vpc_id    = "vpc-0123456789abcdef0"
+subnet_id = "subnet-0123456789abcdef0"
+
+# Use a domain owned by the customer, or leave both values null.
+hostname        = "vpn.example.com"
+route53_zone_id = "Z0123456789ABCDEFG"
+
+# VPN users may connect from changing public IP addresses, so a public CIDR is common.
+vpn_client_cidrs = ["0.0.0.0/0"]
+
+# Restrict TCP 943 to trusted administrator addresses.
+admin_cidrs = ["203.0.113.10/32"]
+
+# SSM Session Manager is preferred. Enable SSH only when necessary.
+enable_ssh       = false
+ssh_allowed_cidrs = []
+key_name         = null
+
+tags = {
+  Customer    = "Acme"
+  Environment = "production"
+  Owner       = "platform-team"
+}

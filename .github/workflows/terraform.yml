@@ -1,0 +1,40 @@
+name: Terraform validation
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v4
+        with:
+          terraform_version: 1.15.8
+
+      - name: Terraform format check
+        run: terraform fmt -check -recursive
+
+      - name: Initialize module without backend
+        run: terraform init -backend=false
+
+      - name: Validate module
+        run: terraform validate
+
+      - name: Initialize example without backend
+        working-directory: examples/terraform
+        run: terraform init -backend=false
+
+      - name: Validate example
+        working-directory: examples/terraform
+        run: terraform validate
