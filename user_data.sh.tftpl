@@ -58,7 +58,7 @@ fi
 
 "$SACLI" --key "vpn.server.routing.gateway_access" --value "true" ConfigPut
 %{ for index, cidr in additional_vpn_routes ~}
-"$SACLI" --key "vpn.server.routing.private_network.${index + 1}" --value "${cidr}" ConfigPut
+"$SACLI" --key "vpn.server.routing.private_network.${index}" --value "${cidr}" ConfigPut
 %{ endfor ~}
 "$SACLI" start
 

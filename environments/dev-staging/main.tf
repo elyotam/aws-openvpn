@@ -62,9 +62,12 @@ module "openvpn_dev" {
   hostname        = var.hostname
   route53_zone_id = var.route53_zone_id
 
-  vpn_client_cidrs      = var.vpn_client_cidrs
-  admin_cidrs           = var.admin_cidrs
-  additional_vpn_routes = [var.staging_vpc_cidr]
+  vpn_client_cidrs = var.vpn_client_cidrs
+  admin_cidrs      = var.admin_cidrs
+  additional_vpn_routes = [
+    var.dev_vpc_cidr,
+    var.staging_vpc_cidr,
+  ]
 
   enable_ssh = false
 
